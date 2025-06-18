@@ -20,49 +20,35 @@ export class ArticlesService {
   ) {}
 
   create(dto: CreateArticleDto, user: IToken) {
-    console.log(user);
     const article = this.articleRepo.create({ ...dto, authorId: user.userId });
     return this.articleRepo.save(article);
   }
 
-  async findAll(query: GetAllArticlesDto, user?) {
-    console.log(user);
-
-    const { tags } = query;
+  async findAll(query: GetAllArticlesDto, user?: IToken) {
+    const tags = query.tags?.map((tag) => tag.toLowerCase()) || [];
 
     const qb = this.articleRepo
       .createQueryBuilder('article')
-      .leftJoinAndSelect('article.author', 'author');
+      .innerJoinAndSelect('article.author', 'author');
 
     if (!user) {
       qb.andWhere('article.isPublic = :isPublic', { isPublic: true });
     }
 
-    if (tags && tags.length) {
-      const lowerCaseTags = tags.map((tag) => tag.toLowerCase());
-
-      qb.andWhere(
-        `EXISTS (
-          SELECT 1 FROM unnest(article.tags) AS tag
-          WHERE LOWER(tag) = ANY(:tags)
-        )`,
-        { tags: lowerCaseTags },
-      );
+    if (tags.length) {
+      qb.andWhere('article.tags && :tags', { tags });
     }
 
     const articles = await qb.orderBy('article.createdAt', 'DESC').getMany();
+
     return instanceToPlain(articles);
   }
 
-  async findOne(id: string, user?) {
+  async findOne(id: string) {
     const qb = this.articleRepo
       .createQueryBuilder('article')
-      .leftJoinAndSelect('article.author', 'author')
+      .innerJoinAndSelect('article.author', 'author')
       .where('article.id = :id', { id });
-
-    if (!user) {
-      qb.andWhere('article.isPublic = :isPublic', { isPublic: true });
-    }
 
     const article = await qb.getOne();
 
