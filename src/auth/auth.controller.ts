@@ -1,0 +1,24 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
+import { AuthDto } from './dto/auth.dto';
+
+@ApiTags('Auth')
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register new user' })
+  @ApiResponse({ status: 201, description: 'User registered' })
+  register(@Body() body: AuthDto) {
+    return this.authService.register(body.email, body.password);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({ status: 200, description: 'Access token' })
+  login(@Body() body: AuthDto) {
+    return this.authService.login(body.email, body.password);
+  }
+}
