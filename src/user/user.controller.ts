@@ -16,7 +16,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('me')
-  @ApiOperation({ summary: 'Get current user' })
+  @ApiOperation({ summary: 'Получение моего профиля' })
   @ApiResponse({ status: 200, description: 'User data' })
   async getMe(@Req() req) {
     return this.userService.findById(req.user.userId);

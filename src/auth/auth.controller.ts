@@ -9,14 +9,14 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Register new user' })
+  @ApiOperation({ summary: 'Регистрация нового пользователя' })
   @ApiResponse({ status: 201, description: 'User registered' })
   register(@Body() body: AuthDto) {
     return this.authService.register(body.email, body.password);
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Login user' })
+  @ApiOperation({ summary: 'Вход в систему' })
   @ApiResponse({ status: 200, description: 'Access token' })
   login(@Body() body: AuthDto) {
     return this.authService.login(body.email, body.password);
