@@ -5,8 +5,24 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: my_pass
+      POSTGRES_DB: blog_test_task
       PGDATA: /data/postgres
     volumes:
       - ./postgres-data:/data/postgres
     ports:
       - '5432:5432'
+
+  app:
+    container_name: nest-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=development

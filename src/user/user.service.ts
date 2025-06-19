@@ -16,28 +16,30 @@ export class UserService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  async create(data: { email: string; password: string }): Promise<User> {
+  async create(data: { email: string; password: string }) {
     const existingUser = await this.findByEmail(data.email);
     if (existingUser) throw new ConflictException('Email уже занят');
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const newUser = {
-      ...data,
+
+    const user = this.userRepo.create({
+      email: data.email,
       password: hashedPassword,
-    };
-    return await this.userRepo.save(newUser);
+    });
+
+    return await this.userRepo.save(user);
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll() {
     return this.userRepo.find();
   }
 
-  async findById(id: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { id } });
+  async findById(id: string) {
+    return await this.userRepo.findOne({ where: { id } });
   }
 
   async update(id: string, dto: UpdateUserDto) {
@@ -53,7 +55,7 @@ export class UserService {
 
     Object.assign(user, dto);
 
-    return this.userRepo.save(user);
+    return await this.userRepo.save(user);
   }
 
   async delete(id: string) {
@@ -62,7 +64,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`Пользователь с id = ${id} не найден`);
     }
-
     await this.userRepo.remove(user);
   }
 }

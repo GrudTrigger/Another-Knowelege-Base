@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
       autoLoadEntities: true,
       entities: [User, Article],
       synchronize: true,
+      host: 'postgres',
     }),
     UserModule,
     AuthModule,

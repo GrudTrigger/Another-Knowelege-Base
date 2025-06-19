@@ -49,6 +49,7 @@ export class ArticlesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Получение статьи по id' })
   findOne(@Param('id') id: string) {

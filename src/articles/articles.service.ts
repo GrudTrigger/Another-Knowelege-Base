@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { instanceToPlain } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { Article } from './article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -39,9 +38,11 @@ export class ArticlesService {
       qb.andWhere('article.tags && :tags', { tags });
     }
 
-    const articles = await qb.orderBy('article.createdAt', 'DESC').getMany();
-
-    return instanceToPlain(articles);
+    try {
+      return await qb.orderBy('article.createdAt', 'DESC').getMany();
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async findOne(id: string) {
@@ -58,7 +59,7 @@ export class ArticlesService {
       );
     }
 
-    return instanceToPlain(article);
+    return article;
   }
 
   async update(
@@ -81,15 +82,24 @@ export class ArticlesService {
 
     const updatedArticle = this.articleRepo.merge(article, updateData);
 
-    return instanceToPlain(await this.articleRepo.save(updatedArticle));
+    try {
+      return await this.articleRepo.save(updatedArticle);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async remove(id: string, userId: string) {
     const article = await this.articleRepo.findOne({ where: { id } });
     if (!article) {
-      throw new BadRequestException('Article not found');
+      throw new BadRequestException('Статья не найдена');
     }
-    if (article.author.id !== userId) throw new Error('Forbidden');
-    return this.articleRepo.delete(id);
+    if (article.author.id !== userId)
+      throw new BadRequestException('Вы не являетесь автором статьи');
+    try {
+      return this.articleRepo.delete(id);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }
